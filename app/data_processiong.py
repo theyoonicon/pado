@@ -97,15 +97,15 @@ def create_graph(df, date_filter):
         y = df_symptom['event_num']
         
         # Check if there are enough points to create a spline
-        if len(x) > 3 and len(y) > 3:
-            # Create spline
-            x_new = np.linspace(x.min(), x.max(), 300) 
-            spl = make_interp_spline(x, y, k=3)
-            y_smooth = spl(x_new)
+        # if len(x) > 3 and len(y) > 3:
+        #     # Create spline
+        #     x_new = np.linspace(x.min(), x.max(), 300) 
+        #     spl = make_interp_spline(x, y, k=3)
+        #     y_smooth = spl(x_new)
             
-            plt.plot(mdates.num2date(x_new), y_smooth, marker='o', linestyle='-', color='b', label='Symptom Event')
-        else:
-            plt.plot(df_symptom['time'], df_symptom['event_num'], marker='o', linestyle='-', color='b', label='Symptom Event')
+        #     plt.plot(mdates.num2date(x_new), y_smooth, marker='o', linestyle='-', color='b', label='Symptom Event')
+        # else:
+        plt.plot(df_symptom['time'], df_symptom['event_num'], marker='o', linestyle='-', color='b', label='Symptom Event')
         
         
         # Plot medication events

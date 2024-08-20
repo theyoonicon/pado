@@ -4,5 +4,5 @@ from datetime import timedelta
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'development.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://theyoonicon:yaudrl8735@localhost/pado'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)  # 토큰 만료 시간 설정

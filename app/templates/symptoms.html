@@ -3,92 +3,94 @@
 {% block title %}Symptoms{% endblock %}
 
 {% block content %}
-    <h2 class="uk-heading-line"><span>Symptoms List</span></h2>
-    <form method="get" action="" class="uk-form-stacked uk-margin-bottom">
-        <div class="uk-grid-small" uk-grid>
-            <div class="uk-width-expand">
-                <label for="date_filter" class="uk-form-label">Filter by Date:</label>
-                <div class="uk-form-controls">
-                    <input type="date" id="date_filter" name="date_filter" class="uk-input">
+    <div class="uk-container uk-margin-large-bottom">
+        <h2 class="uk-heading-line"><span>Symptoms List</span></h2>
+        <form method="get" action="" class="uk-form-stacked uk-margin-bottom">
+            <div class="uk-grid-small" uk-grid>
+                <div class="uk-width-expand">
+                    <label for="date_filter" class="uk-form-label">Filter by Date:</label>
+                    <div class="uk-form-controls">
+                        <input type="date" id="date_filter" name="date_filter" class="uk-input">
+                    </div>
+                </div>
+                <div class="uk-width-auto uk-flex uk-flex-bottom">
+                    <button type="submit" class="uk-button uk-button-primary">Filter</button>
                 </div>
             </div>
-            <div class="uk-width-auto uk-flex uk-flex-bottom">
-                <button type="submit" class="uk-button uk-button-primary">Filter</button>
-            </div>
+        </form>
+        <ul class="uk-list uk-list-divider">
+            {% for symptom in symptoms %}
+                <li class="uk-flex uk-flex-between uk-flex-middle">
+                    <div>
+                        {{ symptom.time[:-3] }} - {{ symptom.event }} ({{ symptom.type }})
+                    </div>
+                    <div>
+                        <button class="uk-button uk-button-default uk-margin-small-left" uk-toggle="target: #edit-modal-{{ symptom.id }}">Edit</button>
+                        <button class="uk-button uk-button-danger uk-margin-small-left" uk-toggle="target: #delete-modal-{{ symptom.id }}">Delete</button>
+                    </div>
+                    
+                    <!-- Edit Modal -->
+                    <div id="edit-modal-{{ symptom.id }}" uk-modal>
+                        <div class="uk-modal-dialog uk-modal-body">
+                            <h2 class="uk-modal-title">Edit Symptom</h2>
+                            <form method="post" action="{{ url_for('symptoms.update_symptom', id=symptom.id) }}">
+                                <input type="hidden" name="_method" value="PUT">
+                                <div class="uk-margin">
+                                    <label class="uk-form-label">Type:</label>
+                                    <div class="uk-form-controls">
+                                        <select id="type-{{ symptom.id }}" name="type" class="uk-select" onchange="updateSymptomOptions('{{ symptom.id }}')">
+                                            <option value="symptom" {% if symptom.type == 'symptom' %}selected{% endif %}>Symptom</option>
+                                            <option value="medication" {% if symptom.type == 'medication' %}selected{% endif %}>Medication</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="uk-margin" id="event-container-{{ symptom.id }}">
+                                    <label class="uk-form-label">Event:</label>
+                                    <div class="uk-form-controls">
+                                        <select id="event-{{ symptom.id }}" name="event" class="uk-select">
+                                            {% if symptom.type == 'symptom' %}
+                                                <option value="좋아요" {% if symptom.event == '좋아요' %}selected{% endif %}>좋아요</option>
+                                                <option value="보통이에요" {% if symptom.event == '보통이에요' %}selected{% endif %}>보통이에요</option>
+                                                <option value="나빠요" {% if symptom.event == '나빠요' %}selected{% endif %}>나빠요</option>
+                                            {% elif symptom.type == 'medication' %}
+                                                <option value="약 섭취" selected>약 섭취</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="uk-button uk-button-primary">Save</button>
+                                <button type="button" class="uk-button uk-button-default uk-modal-close">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Delete Modal -->
+                    <div id="delete-modal-{{ symptom.id }}" uk-modal>
+                        <div class="uk-modal-dialog uk-modal-body">
+                            <h2 class="uk-modal-title">Delete Symptom</h2>
+                            <p>Are you sure you want to delete this symptom?</p>
+                            <form method="post" action="{{ url_for('symptoms.update_symptom', id=symptom.id) }}">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="uk-button uk-button-danger">Delete</button>
+                                <button type="button" class="uk-button uk-button-default uk-modal-close">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+
+
+
+                </li>
+            {% endfor %}
+        </ul>
+        {% if graph_html %}
+        <h2 class="uk-heading-line uk-margin-top"><span>Graph</span></h2>
+        <div style="max-width: 100%; overflow-x: auto;">
+            <img src="{{ graph_html }}" alt="Symptom and Medication Over Time">
         </div>
-    </form>
-    <ul class="uk-list uk-list-divider">
-        {% for symptom in symptoms %}
-            <li class="uk-flex uk-flex-between uk-flex-middle">
-                <div>
-                    {{ symptom.time[:-3] }} - {{ symptom.event }} ({{ symptom.type }})
-                </div>
-                <div>
-                    <button class="uk-button uk-button-default uk-margin-small-left" uk-toggle="target: #edit-modal-{{ symptom.id }}">Edit</button>
-                    <button class="uk-button uk-button-danger uk-margin-small-left" uk-toggle="target: #delete-modal-{{ symptom.id }}">Delete</button>
-                </div>
-                
-                <!-- Edit Modal -->
-                <div id="edit-modal-{{ symptom.id }}" uk-modal>
-                    <div class="uk-modal-dialog uk-modal-body">
-                        <h2 class="uk-modal-title">Edit Symptom</h2>
-                        <form method="post" action="{{ url_for('symptoms.update_symptom', id=symptom.id) }}">
-                            <input type="hidden" name="_method" value="PUT">
-                            <div class="uk-margin">
-                                <label class="uk-form-label">Type:</label>
-                                <div class="uk-form-controls">
-                                    <select id="type-{{ symptom.id }}" name="type" class="uk-select" onchange="updateSymptomOptions('{{ symptom.id }}')">
-                                        <option value="symptom" {% if symptom.type == 'symptom' %}selected{% endif %}>Symptom</option>
-                                        <option value="medication" {% if symptom.type == 'medication' %}selected{% endif %}>Medication</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="uk-margin" id="event-container-{{ symptom.id }}">
-                                <label class="uk-form-label">Event:</label>
-                                <div class="uk-form-controls">
-                                    <select id="event-{{ symptom.id }}" name="event" class="uk-select">
-                                        {% if symptom.type == 'symptom' %}
-                                            <option value="좋아요" {% if symptom.event == '좋아요' %}selected{% endif %}>좋아요</option>
-                                            <option value="보통이에요" {% if symptom.event == '보통이에요' %}selected{% endif %}>보통이에요</option>
-                                            <option value="나빠요" {% if symptom.event == '나빠요' %}selected{% endif %}>나빠요</option>
-                                        {% elif symptom.type == 'medication' %}
-                                            <option value="약 섭취" selected>약 섭취</option>
-                                        {% endif %}
-                                    </select>
-                                </div>
-                            </div>
-                            <button type="submit" class="uk-button uk-button-primary">Save</button>
-                            <button type="button" class="uk-button uk-button-default uk-modal-close">Cancel</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Delete Modal -->
-                <div id="delete-modal-{{ symptom.id }}" uk-modal>
-                    <div class="uk-modal-dialog uk-modal-body">
-                        <h2 class="uk-modal-title">Delete Symptom</h2>
-                        <p>Are you sure you want to delete this symptom?</p>
-                        <form method="post" action="{{ url_for('symptoms.update_symptom', id=symptom.id) }}">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="uk-button uk-button-danger">Delete</button>
-                            <button type="button" class="uk-button uk-button-default uk-modal-close">Cancel</button>
-                        </form>
-                    </div>
-                </div>
-
-
-
-            </li>
-        {% endfor %}
-    </ul>
-    {% if graph_html %}
-    <h2 class="uk-heading-line uk-margin-top"><span>Graph</span></h2>
-    <div style="max-width: 100%; overflow-x: auto;">
-        <img src="{{ graph_html }}" alt="Symptom and Medication Over Time">
-    </div>
-    {% elif no_data_message %}
-    <p>{{ no_data_message }}</p>
-    {% endif %}
+        {% elif no_data_message %}
+        <p>{{ no_data_message }}</p>
+        {% endif %}
+    </div>  
 
     <script>
         function updateSymptomOptions(id) {
